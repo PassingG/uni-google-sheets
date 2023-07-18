@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR || UNITY_BUILD 
+﻿#if UNITY_EDITOR || UNITY_BUILD
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +8,8 @@ namespace UGS.Editor
     {
         static UGSSetting instance;
         private bool foldout = false;
-        [MenuItem("Window/HamsterLib/Debug/DebugMode")]
+
+        [MenuItem("Window/Sandy/Debug/DebugMode")]
         public static void ToggleDebugMode()
         {
             EditorPrefsManager.Toggle("UGS.DebugMode");
@@ -20,7 +21,7 @@ namespace UGS.Editor
         }
 
 
-        [MenuItem("HamsterLib/UGS/Setting", priority = 10000)]
+        [MenuItem("Sandy/UGS/Setting", priority = 10000)]
         public static void CreateInstance()
         {
             // Get existing open window or if none, make a new one:
@@ -60,12 +61,12 @@ namespace UGS.Editor
                 EditorApplication.delayCall += CreateAssetWhenReady;
                 return;
             }
+
             EditorApplication.delayCall += CreateAssetNow;
         }
 
         public static void CreateAssetNow()
         {
-
             var data = EditorPrefsManager.Get<string>("UGSetting.ScriptPassword");
             var data2 = EditorPrefsManager.Get<string>("UGSetting.GoogleFolderID");
             var data3 = EditorPrefsManager.Get<string>("UGSetting.ScriptURL");
@@ -74,14 +75,15 @@ namespace UGS.Editor
             UGSettingObjectWrapper.ScriptURL = data3;
             UGSettingObjectWrapper.ScriptPassword = data;
             UGSettingObjectWrapper.GoogleFolderID = data2;
-
         }
+
         GUIStyle _fontsizeBig;
         GUIStyle _fontsizeBigGreen;
         GUIStyle _fontMiddleRed;
         GUIStyle _fontMiddelGreen;
 
         Vector2 scrollPos;
+
         public void OnGUI()
         {
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
@@ -113,6 +115,7 @@ namespace UGS.Editor
             {
                 Application.OpenURL("https://shlifedev.gitbook.io/unitygooglesheets/getting-start/apps-script");
             }
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
             _password = EditorGUILayout.TextField("스크립트 Password", _password);
@@ -120,6 +123,7 @@ namespace UGS.Editor
             {
                 Application.OpenURL("https://shlifedev.gitbook.io/unitygooglesheets/getting-start/apps-script");
             }
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
             _googleFolderId = EditorGUILayout.TextField("구글폴더 ID", _googleFolderId);
@@ -127,6 +131,7 @@ namespace UGS.Editor
             {
                 Application.OpenURL("https://shlifedev.gitbook.io/unitygooglesheets/getting-start/google-drive");
             }
+
             EditorGUILayout.EndHorizontal();
 
             GUILayout.Space(10);
@@ -139,16 +144,17 @@ namespace UGS.Editor
                 _generateCodePath = EditorGUILayout.TextField("Generated Code Save Path", _generateCodePath);
                 if (GUILayout.Button("Set Directory"))
                 {
-
                     var path = EditorUtility.OpenFolderPanel("Select Your Generated Code Save Path", "Assets/", "Assets/");
                     string relativepath = null;
                     if (path.StartsWith(Application.dataPath))
                     {
                         relativepath = "Assets" + path.Substring(Application.dataPath.Length);
                     }
+
                     if (string.IsNullOrEmpty(relativepath) == false)
                         _generateCodePath = relativepath;
                 }
+
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 _jsonDataPath = EditorGUILayout.TextField("Generated Json Save Path", _jsonDataPath);
@@ -160,9 +166,11 @@ namespace UGS.Editor
                     {
                         relativepath = "Assets" + path.Substring(Application.dataPath.Length);
                     }
+
                     if (string.IsNullOrEmpty(relativepath) == false)
                         _jsonDataPath = relativepath;
                 }
+
                 GUILayout.EndHorizontal();
             }
 
@@ -170,12 +178,12 @@ namespace UGS.Editor
             GUILayout.Space(10);
 
 
-
             GUILayout.Label("보안 설정", fontsizeBig);
             if (EditorGUILayout.LinkButton("여기에서 도움말을 확인하세요."))
             {
                 Application.OpenURL("https://shlifedev.gitbook.io/unitygooglesheets/additional/apps-script-backend-security");
             }
+
             var isUsedSecurityMode = DefineSymbolManager.IsUsed("UGS_SECURITY_MODE");
             if (isUsedSecurityMode)
             {
@@ -194,7 +202,6 @@ namespace UGS.Editor
 
                 if (GUILayout.Button("Disable Security Mode"))
                 {
-
                     DefineSymbolManager.RemoveDefineSymbol("UGS_SECURITY_MODE");
                 }
             }
@@ -208,7 +215,6 @@ namespace UGS.Editor
                     EditorPrefsManager.Set<string>("UGSetting.ScriptURL", UGSettingObjectWrapper.ScriptURL);
 
                     DefineSymbolManager.AddDefineSymbols("UGS_SECURITY_MODE");
-
                 }
             }
 
@@ -229,10 +235,10 @@ namespace UGS.Editor
                 EditorPrefsManager.Set<string>("UGSetting.ScriptURL", UGSettingObjectWrapper.ScriptURL);
 
 
-
                 EditorUtility.SetDirty(setting);
                 AssetDatabase.SaveAssets();
             }
+
             if (EditorPrefsManager.Get<bool>("UGS.DebugMode"))
             {
                 if (GUILayout.Button("Load Debug Data"))
@@ -241,6 +247,7 @@ namespace UGS.Editor
                     this._googleFolderId = "1fanZLAqJEvy366vw3dOHQ4o9rhqcz-vI";
                 }
             }
+
             EditorGUILayout.EndScrollView();
         }
     }

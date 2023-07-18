@@ -29,7 +29,9 @@ namespace UGS
                 IsTable = isTable;
             }
         }
+
         static List<BackupPlan> BackupList = new List<BackupPlan>();
+
         public static void AddBackupPlan(string path)
         {
             if (System.IO.File.Exists(path))
@@ -47,11 +49,11 @@ namespace UGS
         }
     }
 }
+
 namespace UGS
 {
     public class UnityGoogleSheet
     {
-
 #if UNITY_EDITOR
         public static void TestFunction()
         {
@@ -84,7 +86,6 @@ namespace UGS
 #endif
 
 
-
 #if UNITY_EDITOR
         public static void CopyFolder(string id, System.Action<string> callback)
         {
@@ -92,10 +93,7 @@ namespace UGS
             {
                 UnityEditorWebRequest.Instance.CopyFolder(new CopyFolderReqModel(id),
                     e => { throw e; }
-                   , x =>
-                    {
-                        callback?.Invoke(x.createdFolderId);
-                    });
+                    , x => { callback?.Invoke(x.createdFolderId); });
             }
         }
 #endif
@@ -113,7 +111,22 @@ namespace UGS
             {
                 writeFunction?.Invoke(null, new object[] { value, writeCallback });
             }
+        }
 
+        /// <summary>
+        /// Write Your Table Data To GoogleSheet
+        /// </summary> 
+        public static void Read<T>(T value, Action<ReadSpreadSheetResult> readCallBack = null) where T : ITable
+        {
+#if UNITY_2017_1_OR_NEWER
+            Initalize();
+#endif
+            var @class = typeof(T);
+            var readFunction = @class.GetMethod("Read", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (readFunction != null)
+            {
+                readFunction?.Invoke(null, new object[] { value, readCallBack });
+            }
         }
 
         /// <summary>
@@ -122,8 +135,6 @@ namespace UGS
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-
-
         public static List<T> GetList<T>() where T : ITable
         {
             var @class = typeof(T);
@@ -152,21 +163,6 @@ namespace UGS
             return target.GetValue(null) as Dictionary<Key, Value>;
         }
 
-        /// <summary>
-        /// Generate Your Table Data 
-        /// </summary>
-        /// <param name="csharpGenerate"> generate script, runtime not work this </param>
-        /// <param name="jsonGenerate">generate json</param>
-        public static void Generate<T>(bool csharpGenerate, bool jsonGenerate) where T : ITable
-        {
-#if UNITY_2017_1_OR_NEWER
-            Initalize();
-#endif
-            var sSheetID = TableUtils.GetSpreadSheetID<T>();
-            Generate(sSheetID, csharpGenerate, jsonGenerate);
-
-        }
-
 #if !UNITY_2017_1_OR_NEWER && !UNITY_EDITOR
     public static void GenerateSheetInFolder(string folderId, bool csharpGenerate, bool jsonGenerate)
     {
@@ -191,33 +187,9 @@ namespace UGS
         public static void OnReadError(System.Exception e)
         {
             Debug.LogError("UGS Data Generate :: Google Networking Error \n\n " + e);
-
         }
-        /// <su
-        public static void Generate(string spreadSheetId, bool csharpGenerate, bool jsonGenerate)
-        {
 
-#if UNITY_EDITOR
-            if (Application.isPlaying)
-            {
-                UnityEditorWebRequest.Instance.ReadSpreadSheet(new ReadSpreadSheetReqModel(spreadSheetId), OnReadError, (x) =>
-                {
-                    GoogleSpreadSheets.DataParser.ParseSheet(x, csharpGenerate, jsonGenerate, new UnityFileWriter());
-                });
-            }
-            else
-            {
-                UnityEditorWebRequest.Instance.ReadSpreadSheet(new ReadSpreadSheetReqModel(spreadSheetId), OnReadError, (x) =>
-                {
-                    GoogleSpreadSheets.DataParser.ParseSheet(x, csharpGenerate, jsonGenerate, new UnityFileWriter());
-                });
-            }
-#endif
 
-#if !UNITY_EDITOR
-        Debug.LogError("Currently Cannot Generate In Builded Runtime.");
-#endif
-        }
         /// <summary>
         /// Load Data From GoogleSheet  
         /// </summary>
@@ -226,7 +198,7 @@ namespace UGS
         /// <param name="callback"></param>
         /// <param name="updateData"></param>
         public static void LoadFromGoogle<Key, Value>([NotNull] System.Action<List<Value>, Dictionary<Key, Value>> callback, bool updateData = false)
-        where Value : ITable
+            where Value : ITable
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
 #if UNITY_2017_1_OR_NEWER
@@ -238,7 +210,6 @@ namespace UGS
             //Call Load Method
             if (loadFunction != null)
                 loadFunction.Invoke(null, new System.Object[] { callback, updateData });
-
         }
 
 
@@ -301,7 +272,5 @@ namespace UGS
                 }
             }
         }
-
     }
-
 }

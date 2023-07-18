@@ -9,17 +9,26 @@ namespace GoogleSheet.Type
         {
             return SetValueToBracketArray(value as T);
         }
+
+        public static string SetValueToBracketArray<T>(object value)
+        {
+            return SetValueToBracketArray(value as T[]);
+        }
+
         public static string SetValueToBracketArray<T>(System.Collections.Generic.List<T> value)
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("[");
-            for (int i = 0; i < value.Count; i++)
-            {
-                string data = value[i].ToString();
-                builder.Append(data);
-                if (i != value.Count)
-                    builder.Append(",");
-            }
+            builder.AppendJoin(",", value);
+            builder.Append("]");
+            return builder.ToString();
+        }
+
+        public static string SetValueToBracketArray<T>(T[] value)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("[");
+            builder.AppendJoin(",", value);
             builder.Append("]");
             return builder.ToString();
         }

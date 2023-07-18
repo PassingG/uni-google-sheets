@@ -5,6 +5,6 @@ namespace GoogleSheet
 {
     public interface IParser
     {
-        void ParseSheet(ReadSpreadSheetResult sheetJsonData, bool generateCs, bool generateJson, IFIleWriter writer);
+        SheetInfo[] ParseSheet(ReadSpreadSheetResult sheetJsonData);
     }
 }

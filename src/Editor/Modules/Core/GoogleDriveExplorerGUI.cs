@@ -1,16 +1,18 @@
-﻿#if UNITY_EDITOR || UNITY_BUILD 
+﻿#if UNITY_EDITOR || UNITY_BUILD
 using GoogleSheet.Protocol.v2.Req;
 using System.Collections.Generic;
 using System.Linq;
 using UGS.IO;
 using UnityEditor;
 using UnityEngine;
+
 namespace UGS.Editor
 {
     public class GoogleDriveExplorerGUI : EditorWindow
     {
         static GoogleDriveExplorerGUI instance;
-        [MenuItem("HamsterLib/UGS/Manager", priority = -9999)]
+
+        [MenuItem("Sandy/UGS/Manager", priority = -9999)]
         public static void Init()
         {
             var isUsedSecurityMode = DefineSymbolManager.IsUsed("UGS_SECURITY_MODE");
@@ -26,16 +28,17 @@ namespace UGS.Editor
                 EditorUtility.DisplayDialog("Require Setting!", "누락된 세팅이 있습니다. UGS 메뉴를 열어 세팅을 완료해주시길 바랍니다.", "OK");
                 return;
             }
+
             var gdWindow = GoogleDriveExplorerGUI.GetWindow<GoogleDriveExplorerGUI>();
             if (gdWindow)
                 gdWindow.Close();
 
             Instance = (GoogleDriveExplorerGUI)EditorWindow.GetWindow(typeof(GoogleDriveExplorerGUI));
             Instance.Show();
-
         }
 
         public string DefaultFileName = "DefaultTable";
+
         public GUIStyle TopButtonGui
         {
             get
@@ -51,6 +54,7 @@ namespace UGS.Editor
                 return gs;
             }
         }
+
         public GUIStyle ExcelIconGui
         {
             get
@@ -58,12 +62,14 @@ namespace UGS.Editor
                 GUIStyle gs = new GUIStyle();
                 gs.normal.textColor = new Color(1, 1, 1, 1);
                 gs.normal.background = CachedResource.LoadTextureFromResource("ExcelIcon");
-                gs.alignment = TextAnchor.MiddleCenter; ;
+                gs.alignment = TextAnchor.MiddleCenter;
+                ;
                 gs.margin = new RectOffset(0, 0, 0, 0);
                 gs.padding = new RectOffset(0, 0, 0, 0);
                 return gs;
             }
         }
+
         public GUIStyle FolderIconGui
         {
             get
@@ -71,12 +77,14 @@ namespace UGS.Editor
                 GUIStyle gs = new GUIStyle();
                 gs.normal.textColor = new Color(1, 1, 1, 1);
                 gs.normal.background = CachedResource.LoadTextureFromResource("FolderIcon");
-                gs.alignment = TextAnchor.MiddleCenter; ;
+                gs.alignment = TextAnchor.MiddleCenter;
+                ;
                 gs.margin = new RectOffset(0, 0, 0, 0);
                 gs.padding = new RectOffset(0, 0, 0, 0);
                 return gs;
             }
         }
+
         public GUIStyle FileBackgroundGui
         {
             get
@@ -88,20 +96,26 @@ namespace UGS.Editor
                 return gs;
             }
         }
+
         public GUIStyle FileNameGui
         {
             get
             {
                 GUIStyle gs = new GUIStyle();
                 gs.normal.textColor = new Color(1, 1, 1, 1);
-                gs.alignment = TextAnchor.MiddleCenter; ;
+                gs.alignment = TextAnchor.MiddleCenter;
+                ;
                 gs.clipping = TextClipping.Overflow;
                 return gs;
             }
         }
+
         public enum FileType
         {
-            Folder, ParentFolder, Excel, Unknown
+            Folder,
+            ParentFolder,
+            Excel,
+            Unknown
         }
 
         [System.Serializable]
@@ -123,19 +137,19 @@ namespace UGS.Editor
 
         private List<(string, System.Action)> _topMenus = new List<(string, System.Action)>()
         {
-            ("Open",()=>{ Application.OpenURL($"https://drive.google.com/drive/folders/" + currentViewFolderId); }),
-            ("Generate",Generate),
+            ("Open", () => { Application.OpenURL($"https://drive.google.com/drive/folders/" + currentViewFolderId); }),
+            ("Generate", () => { }),
             ("Refresh", () =>
             {
                 GoogleDriveExplorerGUI.instance.loadedFileData.Clear();
                 GoogleDriveExplorerGUI.instance.CreateFileDatas(UGSettingObjectWrapper.GoogleFolderID);
             }),
-            ("Setting",Setting),
-            ("Document",Document),
+            ("Setting", Setting),
+            ("Document", Document),
         };
 
-        [SerializeField]
-        public List<FileData> loadedFileData = new List<FileData>();
+        [SerializeField] public List<FileData> loadedFileData = new List<FileData>();
+
         public static GoogleDriveExplorerGUI Instance
         {
             get
@@ -152,7 +166,6 @@ namespace UGS.Editor
 
         public static void OnEditorError(System.Exception e)
         {
-
             //bool p = (UnityEditor.EditorUtility.DisplayDialog("UGS Exception", "Error! \n\n " + e.Message, "Open Setting..", "dev:debug gui"));
             //if(p)
             //{ 
@@ -186,9 +199,8 @@ namespace UGS.Editor
 
 
             //}
-
-
         }
+
         public void CreateFileDatas(string id)
         {
             loadedFileData.Clear();
@@ -205,10 +217,12 @@ namespace UGS.Editor
                 {
                     currentViewFolderId = id;
                 }
+
                 for (int i = 0; i < x.fileId.Count; i++)
                 {
                     loadedFileData.Add(new FileData((FileType)x.fileType[i], x.url[i], x.fileId[i], x.fileName[i]));
                 }
+
                 IsWaitForCreate = false;
             });
         }
@@ -223,7 +237,6 @@ namespace UGS.Editor
         /// <param name="datas"></param>
         private static void WriteMetaData(List<FileData> datas)
         {
-
             UGSettingObject setting = Resources.Load<UGSettingObject>("UGSettingObject");
             string ugsMetaFileName = "meta.bin";
             var list = datas.Select(x => x.fileName).ToList();
@@ -235,51 +248,17 @@ namespace UGS.Editor
             AssetDatabase.Refresh();
         }
 #endif
-        public static void Generate()
-        {
-            GoogleSheet.GoogleSpreadSheets.Init(new UnityGSParser(), new UnityFileReader());
-            var files = GoogleDriveExplorerGUI.GetWindow<GoogleDriveExplorerGUI>().loadedFileData;
-            if (Application.isPlaying == false)
-            {
-                foreach (var file in files)
-                {
-                    if (file.type == FileType.Excel)
-                    {
-                        if (Application.isPlaying == false)
-                        {
-                            UnityEditorWebRequest.Instance.ReadSpreadSheet(new ReadSpreadSheetReqModel(file.id), OnEditorError, (x) =>
-                            {
-                                GoogleSheet.GoogleSpreadSheets.DataParser.ParseSheet(x, true, true, new UnityFileWriter());
-                            });
-                        }
-                        else //Currently Not Support With PlayMode
-                        {
-                            UnityPlayerWebRequest.Instance.ReadSpreadSheet(new ReadSpreadSheetReqModel(file.id), OnEditorError, (x) =>
-                            {
-                                GoogleSheet.GoogleSpreadSheets.DataParser.ParseSheet(x, true, true, new UnityFileWriter());
-                            });
-                        }
-                    }
-                }
 
-                // weplanb
-#if UNITY_EDITOR
-                WriteMetaData(GoogleDriveExplorerGUI.GetWindow<GoogleDriveExplorerGUI>().loadedFileData);
-#endif
-            }
-            else
-            {
-                UnityEditor.EditorUtility.DisplayDialog("UGS Dialog", "Generate Not Support In Play/Runtime Mode.", "OK");
-            }
-        }
         public static void Setting()
         {
             UGSSetting.CreateInstance();
         }
+
         public static void Document()
         {
             Application.OpenURL("https://shlifedev.gitbook.io/unitygooglesheet/");
         }
+
         public void DoubleClickCheck(FileData data)
         {
             if (latestClickTime != System.DateTime.Now && System.DateTime.MinValue != latestClickTime)
@@ -305,14 +284,15 @@ namespace UGS.Editor
                     {
                         Application.OpenURL(data.url);
                     }
+
                     return;
                 }
             }
 
             /* 일반 클릭 판정 */
             latestClickTime = System.DateTime.Now;
-
         }
+
         public void OnExplorer()
         {
             var rect = GUILayoutUtility.GetRect(Instance.position.width, Instance.position.height - 100);
@@ -333,18 +313,22 @@ namespace UGS.Editor
                     currentItemYPos += itemHeight;
                     currentItemXPos = 0;
                 }
+
                 if (GUI.Button(new Rect(currentItemXPos, currentItemYPos, itemWIdth, itemHeight), "", FileBackgroundGui))
                 {
                     DoubleClickCheck(loadedFileData[i]);
                 }
+
                 if (loadedFileData[i].type == FileType.Excel)
                 {
                     GUI.Box(new Rect(currentItemXPos + (itemWIdth / 4), currentItemYPos + (itemWIdth / 4), itemWIdth / 2, itemHeight / 2), "", ExcelIconGui);
                 }
+
                 if (loadedFileData[i].type == FileType.Folder)
                 {
                     GUI.Box(new Rect(currentItemXPos + (itemWIdth / 4), currentItemYPos + (itemWIdth / 4), itemWIdth / 2, itemHeight / 2), "", FolderIconGui);
                 }
+
                 if (loadedFileData[i].type == FileType.ParentFolder)
                 {
                     GUI.Box(new Rect(currentItemXPos + (itemWIdth / 4), currentItemYPos + (itemWIdth / 4), itemWIdth / 2, itemHeight / 2), "", FolderIconGui);
@@ -355,9 +339,9 @@ namespace UGS.Editor
 
                 GUI.Label(new Rect(currentItemXPos, (currentItemYPos + itemHeight / 3), itemWIdth, itemHeight), fileName, FileNameGui);
             }
+
             GUI.EndScrollView();
         }
-
 
 
         public void OnBottom()
@@ -387,8 +371,6 @@ namespace UGS.Editor
         }
 
 
-
-
         public void OnTop()
         {
             EditorGUILayout.BeginHorizontal();
@@ -408,6 +390,7 @@ namespace UGS.Editor
         public void Refresh()
         {
         }
+
         public void OnFocus()
         {
             if (loadedFileData.Count == 0)
@@ -416,13 +399,13 @@ namespace UGS.Editor
                 CreateFileDatas(UGSettingObjectWrapper.GoogleFolderID);
             }
         }
+
         public void OnGUI()
         {
             OnTop();
             OnExplorer();
             OnBottom();
         }
-
     }
 }
 #endif

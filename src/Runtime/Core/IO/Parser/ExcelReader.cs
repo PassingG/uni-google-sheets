@@ -5,9 +5,11 @@ namespace GoogleSheet.IO
 {
     public class ExcelParser : IParser
     {
-        public void ParseSheet(ReadSpreadSheetResult data, bool generateCs, bool generateJson, IFIleWriter writer)
+        public SheetInfo[] ParseSheet(ReadSpreadSheetResult data)
         {
             throw new NotImplementedException();
+
+            return null;
         }
     }
 }

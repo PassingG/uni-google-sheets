@@ -1,5 +1,4 @@
-﻿
-using GoogleSheet.IO;
+﻿using GoogleSheet.IO;
 using GoogleSheet.IO.FileReader;
 using GoogleSheet.IO.FileWriter;
 using GoogleSheet.Protocol.v2.Req;
@@ -12,7 +11,6 @@ namespace GoogleSheet
 {
     public static class GoogleSheetV2
     {
-
         public static void Initialize(string scriptURL, string password)
         {
             ScriptRequester.Instance.Credential(scriptURL, password);
@@ -27,16 +25,6 @@ namespace GoogleSheet
         public static void GetDriveDirectory(string folderID, System.Action<GetDriveFolderResult> callback)
         {
             ScriptRequester.Instance.GetDriveDirectory(new GetDriveDirectoryReqModel(folderID), OnError, callback);
-        }
-
-        /// <summary>
-        /// Read Srpead Sheet Data (It's not data load function)
-        /// </summary>
-        /// <param name="fileID"></param>
-        /// <param name="callback"></param>
-        public static void ReadSpreadSheet(string fileID, System.Action<ReadSpreadSheetResult> callback)
-        {
-            ScriptRequester.Instance.ReadSpreadSheet(new ReadSpreadSheetReqModel(fileID), OnError, callback);
         }
 
         /// <summary>
@@ -60,7 +48,7 @@ namespace GoogleSheet
         /// <param name="callback"></param>
         /// <param name="updateData"></param>
         public static void LoadFromGoogle<Key, Value>(System.Action<List<Value>, Dictionary<Key, Value>> callback, bool updateData = false)
-        where Value : ITable
+            where Value : ITable
         {
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
@@ -72,42 +60,6 @@ namespace GoogleSheet
                 loadFunction.Invoke(null, new System.Object[] { callback, updateData });
         }
 
-
-        /// <summary>
-        /// Code Generator In Directory Files.
-        /// </summary>
-        /// <param name="folderId"></param>
-        public static void GenerateDriveDirectory(string folderId)
-        {
-            ScriptRequester.Instance.GetDriveDirectory(new GetDriveDirectoryReqModel("folderId"), OnError, x =>
-            {
-                int idx = 0;
-                foreach (var v in x.fileType)
-                {
-                    Console.WriteLine("Wait Generate for " + x.fileName[idx] + "...");
-                    if (v == 2)
-                    {
-                        var sheetId = x.fileId[idx];
-                        Generate(sheetId);
-                    }
-                    idx++;
-                }
-            });
-        }
-
-        /// <summary>
-        /// Generate Your Table Data 
-        /// </summary>
-        /// <param name="csharpGenerate"> generate script, runtime not work this </param>
-        /// <param name="jsonGenerate">generate json</param>
-        public static void Generate<T>() where T : ITable
-        {
-            var targetTable = typeof(T);
-            var field = targetTable.GetField("spreadSheetID", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            var sSheetID = (string)field.GetValue(null);
-            Generate(sSheetID);
-        }
-
         /// <summary>
         /// Load Data From Local Cached Json.
         /// </summary>
@@ -117,31 +69,6 @@ namespace GoogleSheet
             var loadFunction = @class.GetMethod("Load", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
             if (loadFunction != null)
                 loadFunction.Invoke(null, new object[] { false });
-        }
-
-        /// <summary>
-        /// Generate .cs .json 
-        /// </summary>
-        /// <param name="fileID"></param>
-        public static void Generate(string fileID)
-        {
-            ReadSpreadSheet(fileID, x =>
-            {
-                GoogleSpreadSheets.DataParser.ParseSheet(x, true, true, new FileWriter());
-            });
-        }
-
-        /// <summary>
-        /// Generate .cs .json 
-        /// </summary>
-        /// <param name="fileID"></param>
-        public static void Generate(string fileID, System.Action callback)
-        {
-            ReadSpreadSheet(fileID, x =>
-            {
-                GoogleSpreadSheets.DataParser.ParseSheet(x, true, true, new FileWriter());
-                callback?.Invoke();
-            });
         }
 
         /// <summary>
@@ -159,7 +86,6 @@ namespace GoogleSheet
                     loadFunction.Invoke(null, new System.Object[] { false });
             }
         }
-
 
 
         /// <summary>
@@ -192,12 +118,18 @@ namespace GoogleSheet
 
     public static class GoogleSpreadSheets
     {
-
         private static IParser _dataParser;
         private static IFileReader _dataReader;
-        public static IParser DataParser { get => _dataParser; }
-        public static IFileReader DataReader { get => _dataReader; }
 
+        public static IParser DataParser
+        {
+            get => _dataParser;
+        }
+
+        public static IFileReader DataReader
+        {
+            get => _dataReader;
+        }
 
 
         public static void Init(IParser parser, IFileReader reader)

@@ -2,12 +2,14 @@
 {
     public class ReadSpreadSheetReqModel : Model
     {
-        public string fileId;
+        public string folderID;
+        public string fileName;
 
-        public ReadSpreadSheetReqModel(string fileId)
+        public ReadSpreadSheetReqModel(string folderID, string fileName)
         {
             this.instruction = (int)EInstruction.READ_SPREADSHEET;
-            this.fileId = fileId;
+            this.folderID = folderID;
+            this.fileName = fileName;
         }
     }
 }
